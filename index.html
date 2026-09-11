@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entscheidungsspiele – Wirtschaft und Recht</title>
+<style>
+:root{
+  --bg:#f5f6fc; --surface:#ffffff; --surface-2:#f1f2fa; --line:#e2e4f0;
+  --text:#161826; --muted:#5f6480;
+  --a1:#5b3df5; --a1-soft:#ece8ff;
+  --a2:#0d8f86; --a2-soft:#dcf5f2;
+  --a3:#d2570b; --a3-soft:#fdeddf;
+  --ok:#15803d; --ok-soft:#e2f7e8;
+  --warn:#b45309; --warn-soft:#fdf0dc;
+  --bad:#c22b22; --bad-soft:#fdeaea;
+  --grad:linear-gradient(135deg,#5b3df5 0%,#8b3ff0 45%,#0d8f86 100%);
+  --shadow:0 1px 2px rgba(22,24,38,.05),0 10px 30px rgba(22,24,38,.07);
+  --shadow-lg:0 8px 16px rgba(22,24,38,.08),0 24px 50px rgba(22,24,38,.12);
+  --r:20px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0e1017; --surface:#171a24; --surface-2:#1f2331; --line:#2b3040;
+    --text:#eef0f8; --muted:#a6adc4;
+    --a1:#a190ff; --a1-soft:#231f42;
+    --a2:#4fd6c6; --a2-soft:#0f3330;
+    --a3:#ffa45c; --a3-soft:#3a2413;
+    --ok:#5fe093; --ok-soft:#12301f;
+    --warn:#f5c169; --warn-soft:#33270f;
+    --bad:#ff8f86; --bad-soft:#3a1b19;
+    --grad:linear-gradient(135deg,#4a2fd6 0%,#7433d8 45%,#0b7a72 100%);
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.35);
+    --shadow-lg:0 8px 16px rgba(0,0,0,.45),0 24px 50px rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Inter,Roboto,Helvetica,Arial,sans-serif;
+  font-size:16.5px;line-height:1.62;-webkit-text-size-adjust:100%}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
+h1,h2,h3,h4{line-height:1.2;margin:0;letter-spacing:-.022em}
+p{margin:0 0 .85em}
+ul{margin:.4em 0 .8em;padding-left:1.2em}
+li{margin:.3em 0}
+button{font:inherit;color:inherit;cursor:pointer}
+svg.i{width:1em;height:1em;flex:none}
+
+header.top{position:relative;overflow:hidden;background:var(--grad);color:#fff;
+  padding-block:52px 44px;border-radius:0 0 30px 30px}
+header.top::before{content:"";position:absolute;width:430px;height:430px;right:-130px;top:-200px;
+  background:rgba(255,255,255,.13);border-radius:50%}
+header.top::after{content:"";position:absolute;width:300px;height:300px;left:-120px;bottom:-200px;
+  background:rgba(255,255,255,.09);border-radius:50%}
+header.top .wrap{position:relative;z-index:1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 14px;
+  font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+header.top h1{font-size:clamp(1.9rem,5.2vw,3rem);font-weight:800;margin:.4em 0 .35em;max-width:19ch}
+header.top .sub{max-width:60ch;font-size:1.05rem;opacity:.94;margin:0}
+
+nav.tabs{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav.tabs .inner{display:flex;gap:5px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+nav.tabs .inner::-webkit-scrollbar{display:none}
+nav.tabs button{border:0;background:transparent;padding:10px 14px;border-radius:13px;white-space:nowrap;
+  font-weight:700;font-size:.92rem;color:var(--muted);display:inline-flex;align-items:center;gap:8px;transition:.16s}
+nav.tabs button:hover{background:var(--surface-2);color:var(--text)}
+nav.tabs button[aria-selected="true"]{background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(91,61,245,.28)}
+
+main{padding-block:38px 70px}
+section.view{display:none;animation:fade .28s ease}
+section.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.kicker{font-size:.76rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--a1);margin-bottom:8px}
+h2.vh{font-size:clamp(1.45rem,3.4vw,2rem);font-weight:800}
+.lead{color:var(--muted);max-width:68ch;margin:.5em 0 28px;font-size:1.02rem}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:24px;margin-bottom:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(262px,1fr));gap:18px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+
+.game-card{position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;overflow:hidden}
+.game-card::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--a1)}
+.game-card.g2::before{background:var(--a2)} .game-card.g3::before{background:var(--a3)}
+.game-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg)}
+.game-card .ic{width:46px;height:46px;border-radius:14px;background:var(--a1-soft);color:var(--a1);
+  display:grid;place-items:center;margin-top:6px}
+.g2 .ic{background:var(--a2-soft);color:var(--a2)} .g3 .ic{background:var(--a3-soft);color:var(--a3)}
+.game-card h3{font-size:1.18rem;margin:14px 0 8px}
+.game-card p{color:var(--muted);font-size:.94rem;flex:1;margin-bottom:14px}
+.game-card .go{font-weight:800;color:var(--a1);display:inline-flex;align-items:center;gap:6px;font-size:.93rem}
+.g2 .go{color:var(--a2)} .g3 .go{color:var(--a3)}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px}
+.step{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:16px}
+.step .n{width:30px;height:30px;border-radius:10px;background:var(--grad);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:.9rem;margin-bottom:10px}
+.step h4{font-size:1rem;margin-bottom:5px}
+.step p{font-size:.9rem;color:var(--muted);margin:0}
+
+.block-title{display:flex;align-items:center;gap:11px;font-size:1.1rem;font-weight:750;margin-bottom:14px}
+.block-title .ico{width:32px;height:32px;border-radius:11px;background:var(--a1-soft);color:var(--a1);
+  display:grid;place-items:center;flex:none}
+
+.sect-head{position:relative;border-radius:var(--r);padding:26px 24px;margin-bottom:22px;color:#fff;overflow:hidden;
+  background:linear-gradient(135deg,#3730a3,#1e1b4b)}
+.sect-head.g2{background:linear-gradient(135deg,#0e7490,#0d8f86)}
+.sect-head.g3{background:linear-gradient(135deg,#c2410c,#e0850b)}
+.sect-head::after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;
+  right:-80px;top:-120px;background:rgba(255,255,255,.11)}
+.sect-head .pos{position:relative;z-index:1}
+.sect-head .lbl{font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.sect-head h2{font-size:clamp(1.4rem,3.6vw,2rem);margin:.35em 0 .3em}
+.sect-head .meta{font-size:.97rem;opacity:.95;max-width:70ch;margin:0}
+
+/* Phasen-Anzeige */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:18px}
+.ph{min-width:0;overflow-wrap:anywhere;hyphens:auto;border:1.5px solid var(--line);border-radius:14px;padding:10px 13px;background:var(--surface-2);
+  font-size:.86rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:9px;transition:.2s}
+.ph .dot{width:24px;height:24px;border-radius:8px;background:var(--line);color:var(--muted);
+  display:grid;place-items:center;font-size:.78rem;font-weight:800;flex:none}
+.ph.on{border-color:var(--a1);background:var(--a1-soft);color:var(--a1)}
+.ph.on .dot{background:var(--a1);color:#fff}
+.ph.done{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.ph.done .dot{background:var(--ok);color:#fff}
+
+/* Rangliste */
+ol.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ol.rank li{display:flex;align-items:center;gap:11px;background:var(--surface);border:1.5px solid var(--line);
+  border-radius:14px;padding:9px 11px;transition:.14s;cursor:grab}
+ol.rank li:hover{border-color:var(--a1)}
+ol.rank li.dragging{opacity:.45;border-style:dashed}
+ol.rank li.over{border-color:var(--a1);background:var(--a1-soft)}
+ol.rank li .pos{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;
+  font-weight:800;font-size:.95rem;background:var(--surface-2);color:var(--muted)}
+ol.rank li:nth-child(-n+3) .pos{background:var(--a1);color:#fff}
+ol.rank li:nth-last-child(-n+3) .pos{background:var(--surface-2);color:var(--muted);opacity:.75}
+ol.rank li .nm{flex:1;font-size:.96rem;font-weight:600;min-width:120px}
+ol.rank li .mv{display:flex;gap:5px;flex:none}
+ol.rank li .mv button{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--line);
+  background:var(--surface-2);display:grid;place-items:center;font-weight:800;font-size:.9rem;transition:.14s}
+ol.rank li .mv button:hover:not(:disabled){border-color:var(--a1);color:var(--a1);background:var(--a1-soft)}
+ol.rank li .mv button:disabled{opacity:.3;cursor:not-allowed}
+ol.rank.locked li{cursor:default;opacity:.75}
+
+.hint{display:flex;gap:11px;align-items:flex-start;background:var(--a1-soft);border-radius:15px;padding:14px 16px;
+  font-size:.93rem;margin-bottom:18px}
+.hint .ico{color:var(--a1);flex:none;margin-top:3px}
+
+.btn{border:0;border-radius:14px;padding:13px 22px;font-weight:750;font-size:.96rem;
+  background:var(--grad);color:#fff;transition:.18s;display:inline-flex;align-items:center;gap:9px;
+  box-shadow:0 6px 18px rgba(91,61,245,.25)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(91,61,245,.34)}
+.btn.ghost{background:var(--surface);color:var(--text);border:1.5px solid var(--line);box-shadow:none}
+.btn.ghost:hover{background:var(--surface-2);transform:none}
+.btnrow{display:flex;gap:11px;flex-wrap:wrap;margin-top:18px}
+
+/* Auswertung */
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.score{border:1.5px solid var(--line);border-radius:18px;padding:18px;text-align:center;background:var(--surface-2)}
+.score .lbl{font-size:.76rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.score .val{font-size:2.4rem;font-weight:800;line-height:1.1;margin:6px 0 2px}
+.score .cap{font-size:.85rem;color:var(--muted)}
+.verdict{border-radius:16px;padding:16px 18px;font-size:.96rem;border:1.5px solid;margin-bottom:20px}
+.verdict b{display:block;font-size:1.05rem;margin-bottom:4px}
+
+.tablescroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.res{width:100%;border-collapse:collapse;font-size:.92rem;min-width:660px}
+table.res th{text-align:left;padding:10px 9px;font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);border-bottom:2px solid var(--line);font-weight:800}
+table.res td{padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.res td.num{text-align:center;font-weight:800;width:64px}
+table.res .badge{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:10px;
+  font-weight:800;font-size:.88rem;padding:0 6px}
+.d0{background:var(--ok-soft);color:var(--ok)}
+.d1{background:var(--warn-soft);color:var(--warn)}
+.d2{background:var(--bad-soft);color:var(--bad)}
+table.res .why{color:var(--muted);font-size:.89rem}
+table.res tr.top td{background:color-mix(in srgb,var(--a1-soft) 55%,transparent)}
+
+.scale{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.scale div{display:flex;justify-content:space-between;gap:12px;font-size:.89rem;padding:7px 12px;border-radius:10px;background:var(--surface-2)}
+.scale div.hit{background:var(--a1-soft);color:var(--a1);font-weight:800}
+.scale div span:first-child{font-weight:700}
+
+details.extra{border:1px dashed var(--line);border-radius:14px;margin-top:16px;background:var(--surface-2)}
+details.extra summary{cursor:pointer;padding:12px 16px;font-size:.9rem;font-weight:700;color:var(--muted);list-style:none}
+details.extra summary::-webkit-details-marker{display:none}
+details.extra summary::before{content:"＋ ";font-weight:800}
+details.extra[open] summary::before{content:"－ "}
+details.extra .txt{padding:0 16px 15px;font-size:.92rem;color:var(--muted)}
+
+.econ{border-left:4px solid var(--a1);background:var(--a1-soft);border-radius:0 15px 15px 0;padding:15px 17px;font-size:.94rem}
+.econ b{display:block;margin-bottom:5px}
+.note{font-size:.87rem;color:var(--muted);border-left:3px solid var(--line);padding-left:13px;margin-top:16px}
+footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);font-size:.86rem;text-align:center;margin-top:20px}
+.hidden{display:none!important}
+.reflect li{margin:.45em 0}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="9.5" r="2"/><circle cx="15.5" cy="14.5" r="2.6"/><circle cx="8" cy="16" r="1.2"/></symbol>
+  <symbol id="ic-wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c2 0 2.5-1.6 4.5-1.6S10 17 12 17s2.5-1.6 4.5-1.6S19 17 21 17"/><path d="M3 21c2 0 2.5-1.6 4.5-1.6S10 21 12 21s2.5-1.6 4.5-1.6S19 21 21 21"/><path d="M12 13V4M12 4l4 2M12 4 8 6"/></symbol>
+  <symbol id="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></symbol>
+  <symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5.9 1.2.9 1.9V16h5.2v-.2c0-.7.3-1.4.9-1.9A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-5.6 6.5-5.6s6.5 2 6.5 5.6"/><path d="M16.5 5.2a3.4 3.4 0 0 1 0 6.6M18 14.8c2.2.6 3.5 2.4 3.5 5.2"/></symbol>
+  <symbol id="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V10M11 21V4M16 21v-7M21 21v-4"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="i"><use href="#ic-chart"/></svg>Wirtschaft und Recht · Entscheidungsspiele</span>
+    <h1>Drei Notlagen. 15 Gegenstände. Deine Entscheidung.</h1>
+    <p class="sub">Du strandest auf dem Mond, treibst im Atlantik und stürzt über der Wüste ab. Jedes Mal musst du dieselbe Frage beantworten, die auch jede wirtschaftliche Entscheidung bestimmt: Was ist mir bei knappen Mitteln wirklich am wichtigsten? Entscheide zuerst allein, dann im Team – und vergleiche anschließend mit der Expertenlösung.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap inner" id="tabbar">
+    <button data-view="start" aria-selected="true"><svg class="i"><use href="#ic-home"/></svg>Start</button>
+    <button data-view="mond" aria-selected="false"><svg class="i"><use href="#ic-moon"/></svg>Mond</button>
+    <button data-view="see" aria-selected="false"><svg class="i"><use href="#ic-wave"/></svg>Seenot</button>
+    <button data-view="wueste" aria-selected="false"><svg class="i"><use href="#ic-sun"/></svg>Wüste</button>
+    <button data-view="bilanz" aria-selected="false"><svg class="i"><use href="#ic-users"/></svg>Deine Bilanz</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ================= START ================= -->
+<section class="view active" id="v-start">
+  <div class="kicker">Worum es geht</div>
+  <h2 class="vh">Entscheiden, wenn alles knapp ist</h2>
+  <p class="lead">In allen drei Spielen hast du zu wenig von allem: zu wenig Platz, zu wenig Zeit, zu wenig Kraft. Genau das ist die Grundsituation jeder wirtschaftlichen Entscheidung. Du musst Prioritäten setzen, Kriterien finden, auf etwas verzichten – und deine Wahl vor anderen begründen können. Wähle ein Szenario und leg los.</p>
+
+  <div class="grid3">
+    <article class="card game-card" data-goto="mond">
+      <div class="ic"><svg class="i" style="width:24px;height:24px"><use href="#ic-moon"/></svg></div>
+      <h3>Notlandung auf dem Mond</h3>
+      <p>300 Kilometer trennen dich vom Mutterschiff. 15 Gegenstände haben die Bruchlandung überstanden – aber du kannst nicht alles tragen.</p>
+      <span class="go">Spiel starten <svg class="i"><use href="#ic-arrow"/></svg></span>
+    </article>
+    <article class="card game-card g2" data-goto="see">
+      <div class="ic"><svg class="i" style="width:24px;height:24px"><use href="#ic-wave"/></svg></div>
+      <h3>Seenot im Atlantik</h3>
+      <p>Dein Schiff sinkt, 1.000 Meilen vom Festland entfernt. Im Rettungsboot ist Platz für 15 Dinge. Welche retten dich wirklich?</p>
+      <span class="go">Spiel starten <svg class="i"><use href="#ic-arrow"/></svg></span>
+    </article>
+    <article class="card game-card g3" data-goto="wueste">
+      <div class="ic"><svg class="i" style="width:24px;height:24px"><use href="#ic-sun"/></svg></div>
+      <h3>Absturz in der Wüste</h3>
+      <p>47 Grad über dem Boden, 70 Meilen bis zur nächsten Siedlung. 15 Gegenstände konntest du aus dem brennenden Flugzeug holen.</p>
+      <span class="go">Spiel starten <svg class="i"><use href="#ic-arrow"/></svg></span>
+    </article>
+  </div>
+
+  <div class="card">
+    <div class="block-title"><span class="ico"><svg class="i" style="width:18px;height:18px"><use href="#ic-check"/></svg></span>So läuft jedes Spiel ab</div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h4>Allein entscheiden</h4><p>Bringe die 15 Gegenstände in deine persönliche Rangfolge – Platz 1 für den wichtigsten. Nimm dir dafür etwa 10 Minuten.</p></div>
+      <div class="step"><div class="n">2</div><h4>In der Gruppe einigen</h4><p>Diskutiert eure Listen und einigt euch auf eine gemeinsame Reihenfolge. Jeder Platz muss einstimmig sein – kein Abstimmen, kein Nachgeben aus Bequemlichkeit.</p></div>
+      <div class="step"><div class="n">3</div><h4>Mit der Lösung vergleichen</h4><p>Du siehst zu jedem Gegenstand die Expertenbewertung samt Begründung und deine Abweichung in Fehlerpunkten.</p></div>
+      <div class="step"><div class="n">4</div><h4>Auswerten und reflektieren</h4><p>Wer war näher an der Lösung – du allein oder die Gruppe? Und woran lag das?</p></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="block-title"><span class="ico"><svg class="i" style="width:18px;height:18px"><use href="#ic-bulb"/></svg></span>Der ökonomische Kern</div>
+      <ul>
+        <li><strong>Knappheit:</strong> Du kannst nicht alles mitnehmen – also musst du entscheiden.</li>
+        <li><strong>Opportunitätskosten:</strong> Jeder Gegenstand auf Platz 1 verdrängt einen anderen. Was du zurücklässt, ist der Preis deiner Wahl.</li>
+        <li><strong>Entscheidungskriterien:</strong> Erst wenn du weißt, wonach du bewertest (überleben, gefunden werden, vorankommen), wird die Rangfolge begründbar.</li>
+        <li><strong>Unsicherheit:</strong> Du kennst nicht alle Folgen – trotzdem musst du dich festlegen. Genau so geht es Unternehmen und Verbrauchern täglich.</li>
+        <li><strong>Gruppenentscheidungen:</strong> Mehr Wissen, aber auch mehr Reibung. Lohnt sich der Aufwand?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="block-title"><span class="ico"><svg class="i" style="width:18px;height:18px"><use href="#ic-users"/></svg></span>Regeln für die Gruppenphase</div>
+      <ul>
+        <li>Zwinge niemandem deine Meinung auf – <strong>argumentiere</strong> stattdessen.</li>
+        <li>Geh auf die Argumente der anderen wirklich ein, statt deine Position nur zu wiederholen.</li>
+        <li>Hör zu: Auch Argumente, die dir nicht passen, können nützlich sein.</li>
+        <li>Stimme nur zu, wenn du überzeugt bist. Keine Einigkeit um jeden Preis.</li>
+        <li>Vermeidet Abstimmungen und Tauschgeschäfte („Du bekommst Platz 3, ich Platz 5“).</li>
+      </ul>
+      <p class="note">Diese Regeln stammen aus der Originalvorlage des NASA-Entscheidungsspiels und gelten für alle drei Szenarien.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SPIELE (per JS gefüllt) ================= -->
+<section class="view" id="v-mond"></section>
+<section class="view" id="v-see"></section>
+<section class="view" id="v-wueste"></section>
+
+<!-- ================= BILANZ ================= -->
+<section class="view" id="v-bilanz">
+  <div class="kicker">Deine Bilanz</div>
+  <h2 class="vh">Was deine Ergebnisse dir sagen</h2>
+  <p class="lead">Hier laufen die Ergebnisse aller drei Spiele zusammen. Spannend ist weniger die Punktzahl selbst – niemand von euch ist Astronaut oder Seefahrerin. Spannend ist der Vergleich: Wie schlägt sich deine Einzelentscheidung gegen die Gruppenentscheidung?</p>
+  <div id="bilanzBox"></div>
+
+  <div class="card">
+    <div class="block-title"><span class="ico"><svg class="i" style="width:18px;height:18px"><use href="#ic-users"/></svg></span>Reflexionsfragen für die Auswertung</div>
+    <ul class="reflect">
+      <li>Wie seid ihr in der Gruppe vorgegangen, um zu einer Lösung zu kommen?</li>
+      <li>Wie hast du die Diskussion erlebt – von angenehm bis anstrengend?</li>
+      <li>Ist es euch gelungen, zu einem echten Ergebnis zu kommen, oder habt ihr euch am Ende doch nur arrangiert?</li>
+      <li>Waren alle gleichberechtigt beteiligt? Wer hat sich durchgesetzt – und warum?</li>
+      <li>Nach welchen Kriterien habt ihr entschieden? Habt ihr diese Kriterien vorher ausgesprochen oder nur gefühlt?</li>
+      <li>Welche Argumente haben dich umgestimmt? Was hat dich überzeugt: Fachwissen, Logik oder Lautstärke?</li>
+      <li>Übertragen auf die Wirtschaft: Wann lohnt es sich für ein Unternehmen, Entscheidungen im Team zu treffen – und wann kostet das nur Zeit?</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="block-title"><span class="ico"><svg class="i" style="width:18px;height:18px"><use href="#ic-bulb"/></svg></span>Das typische Ergebnis</div>
+    <p>In den allermeisten Durchgängen liegt die <strong>Gruppenlösung näher an der Expertenlösung als der Durchschnitt der Einzellösungen</strong>. Das Team weiß zusammen mehr als jedes Mitglied allein, und gute Argumente setzen sich in der Diskussion durch.</p>
+    <p>Zwei Einschränkungen gehören dazu: Große Gruppen brauchen deutlich länger als Einzelne – Beteiligung kostet Zeit und damit Geld. Und es gibt Ausnahmen: Wenn eine Person die Sache wirklich beherrscht, kann die Gruppe das Ergebnis sogar verschlechtern, etwa weil sich die lauteste statt der besten Meinung durchsetzt.</p>
+    <p style="margin:0">Genau deshalb regeln Unternehmen in ihrer Organisation, wer welche Entscheidung allein treffen darf und was im Team entschieden wird.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Szenarien und Musterlösungen nach den klassischen Entscheidungsspielen (NASA-Mondspiel, Seenot-Spiel, Wüstenübung) aus den bereitgestellten Unterrichtsmaterialien.<br>
+    Interaktive Umsetzung für den Unterricht in Wirtschaft und Recht – alle Angaben ohne Gewähr.
+  </div>
+</footer>
+
+<script>
+/* ================== SPIELDATEN ================== */
+const GAMES = {
+  mond: {
+    title: "Notlandung auf dem Mond",
+    lbl: "Szenario 1 · NASA-Spiel",
+    cls: "",
+    icon: "#ic-moon",
+    teaser: "300 Kilometer bis zum Mutterschiff – und du kannst nur das Nötigste tragen.",
+    situation: "Du gehörst zu einem Raumfahrtteam, das sich auf der sonnenbeschienenen Seite des Mondes mit dem Mutterschiff treffen sollte. Wegen technischer Probleme musste eure Landefähre rund 300 Kilometer vom vereinbarten Treffpunkt entfernt aufsetzen – eine Bruchlandung. Ein großer Teil der Ausrüstung wurde dabei zerstört. Euer Überleben hängt davon ab, ob ihr das Mutterschiff zu Fuß erreicht. Für den Marsch dürft ihr nur das Allerwichtigste mitnehmen.",
+    task: "15 Gegenstände sind unbeschädigt geblieben. Bringe sie in die Reihenfolge, die ihre Bedeutung für den 300 Kilometer langen Marsch ausdrückt: Platz 1 für den wichtigsten, Platz 15 für den unwichtigsten Gegenstand.",
+    source: "Musterlösung: Bewertung durch die NASA.",
+    key: "Der Schlüssel liegt in den Bedingungen auf dem Mond: keine Atemluft, keine Atmosphäre, kein Magnetfeld, extreme Sonneneinstrahlung. Alles, was auf der Erde selbstverständlich funktioniert – Feuer, Kompass, Kocher –, ist dort nutzlos. Wer die Umgebungsbedingungen zuerst analysiert, kommt fast automatisch auf eine gute Rangfolge.",
+    items: [
+      ["Zwei 50-Liter-Tanks Sauerstoff", "Zum Überleben unbedingt notwendig – auf dem Mond gibt es keine Atemluft."],
+      ["20 Liter Wasser", "Lebensnotwendig: Auf der Sonnenseite des Mondes verliert der Körper enorm viel Flüssigkeit."],
+      ["Sternkarte (Mondkonstellation)", "Erstrangiges Hilfsmittel zur Navigation – die Sterne sind der einzige verlässliche Wegweiser."],
+      ["Lebensmittelkonzentrat", "Nahrung ist lebensnotwendig; das Konzentrat liefert viel Energie bei wenig Gewicht."],
+      ["UKW-Sender und -Empfänger (solarbetrieben)", "Zur Kommunikation mit dem Mutterschiff – allerdings nur auf Sichtweite."],
+      ["15 Meter Nylonseil", "Ermöglicht das Überwinden von Felsen und hilft beim Transport von Verletzten."],
+      ["Verbandkasten mit Injektionsspritze", "Gut für Injektionen von Medikamenten und Vitaminen."],
+      ["30 m² Fallschirmseide", "Schutz vor der starken Sonneneinstrahlung."],
+      ["Schlauchboot mit CO₂-Flaschen", "Das Boot selbst nützt nichts, die CO₂-Flaschen taugen aber als Rückstoßantrieb."],
+      ["Signalleuchtkugeln / Signalflagge", "Nützlich für Notsignale, sobald das Mutterschiff in Sichtweite ist."],
+      ["Zwei Pistolen (Kal. 0,45)", "Nur als Rückstoßantrieb von Nutzen."],
+      ["Dose Trockenmilch", "Ergänzt das Nahrungskonzentrat, ist aber voluminös und schwer."],
+      ["Tragbarer Kocher", "Unnötig – außer auf der Schattenseite des Mondes."],
+      ["Magnetkompass", "Wertlos: Das Magnetfeld des Mondes ist nicht polarisiert."],
+      ["Schachtel Streichhölzer", "Ohne Sauerstoff brennt nichts – völlig wertlos."]
+    ]
+  },
+  see: {
+    title: "Seenot im Atlantik",
+    lbl: "Szenario 2 · Seenot-Spiel",
+    cls: "g2",
+    icon: "#ic-wave",
+    teaser: "1.000 Meilen vom Festland entfernt – im Ruderboot ohne Motor.",
+    situation: "Du fährst mit einem Schiff über den Atlantischen Ozean, rund tausend Meilen vom Festland entfernt. Plötzlich tritt ein Notfall ein: Das Schiff sinkt. Zusammen mit einigen anderen rettest du dich in ein Rettungsboot – ein Ruderboot ohne Motor. In deiner Jackentasche hast du nur ein paar persönliche Dinge: Geld, ein Feuerzeug, Kleinkram. Gemeinsam könnt ihr jedoch fünfzehn weitere Gegenstände ins Boot bringen.",
+    task: "Bewerte, wie wichtig die fünfzehn Gegenstände für euer Überleben sind: Platz 1 für den wichtigsten, Platz 15 für den unwichtigsten.",
+    source: "Musterlösung: Vorschlag erfahrener US-amerikanischer Seeleute.",
+    key: "Die entscheidende Einsicht: Bei dieser Entfernung könnt ihr die Küste aus eigener Kraft niemals erreichen. Deshalb sind alle Gegenstände am wertvollsten, mit denen ihr Aufmerksamkeit erregt – und Navigationshilfen fast wertlos. Wer dagegen auf Selbstrettung setzt, bewertet Sextant und Seekarte hoch und verliert dadurch viele Punkte.",
+    items: [
+      ["Kleiner Spiegel", "Das wichtigste Signalmittel: Mit Sonnenlicht machst du Schiffe und Flugzeuge über große Entfernung auf dich aufmerksam."],
+      ["10 Liter Dieseltreibstoff", "Lässt sich mit Papier (Geldscheine!) und Feuerzeug anzünden und brennt auf dem Wasser – ein weithin sichtbares Signal."],
+      ["20 Liter Trinkwasser", "Unbedingt notwendig zum Überleben. Wasser ist deutlich wichtiger als Nahrung."],
+      ["Notrationen (Nahrung)", "Ebenfalls sehr wichtig, um bei Kräften zu bleiben."],
+      ["4 m² Kunststofffolie", "Eignet sich zum Auffangen von Regenwasser – Salzwasser kann man nicht trinken."],
+      ["2 Kartons Schokolade", "Brauchbares Nahrungsmittel mit schnell verfügbarer Energie."],
+      ["Angel samt Zubehör", "Zum Fischen – allerdings ohne Garantie auf Fang."],
+      ["5 Meter Nylonseil", "Dient dazu, Menschen und Gegenstände im Boot zu sichern."],
+      ["Schwimmweste", "Hilfreich bei stürmischer See, damit niemand über Bord geht und ertrinkt."],
+      ["Harpune", "Hilfsmittel beim Fischen und zur Abwehr von Haien."],
+      ["2 Liter Rum (80 %)", "Nur zur Wunddesinfektion. Trinken steigert den Wasserbedarf und schadet."],
+      ["Transistorradio mit Batterien", "Kann nur empfangen, nicht senden – mitten auf dem Ozean vermutlich kein Sender in Reichweite."],
+      ["Seekarte", "Weitgehend nutzlos, weil eure genaue Position unbekannt ist und die Küste ohnehin unerreichbar bleibt."],
+      ["Moskitonetz", "Mitten auf dem Atlantik gibt es keine Mücken."],
+      ["Sextant", "Ohne genaue Uhr nicht einsetzbar – und Navigation bringt euch hier nicht weiter."]
+    ],
+    alt: "In den Unterlagen findet sich zusätzlich eine von einer KI erstellte Rangfolge. Sie setzt Trinkwasser, Notrationen und Schwimmweste auf die ersten Plätze und bewertet Spiegel (9) und Dieseltreibstoff (15) niedrig – sie geht also von Selbstversorgung über längere Zeit aus. Die Seeleute gehen dagegen davon aus, dass ihr nur überlebt, wenn ihr schnell gefunden werdet. Diskutiert: Welche Annahme über die Lage ist realistischer? Genau an dieser Annahme – nicht am gesunden Menschenverstand – hängt die ganze Rangfolge."
+  },
+  wueste: {
+    title: "Absturz in der Wüste",
+    lbl: "Szenario 3 · Wüstenübung",
+    cls: "g3",
+    icon: "#ic-sun",
+    teaser: "47 Grad über dem Boden, 70 Meilen bis zur nächsten Siedlung.",
+    situation: "Es ist Mitte Juli, 10 Uhr vormittags. Auf einer Geschäftsreise habt ihr gerade eine Bruchlandung in der Sonora-Wüste im Südwesten der USA überstanden. Die zweimotorige Maschine ist mit den Leichen von Pilot und Copilot vollständig ausgebrannt, nur die Tragflächen sind unversehrt. Verletzt wurde niemand. Der Pilot konnte den genauen Absturzort nicht mehr durchgeben – nur noch, dass ihr euch etwa 70 Meilen südwestlich eines Bergwerks befindet, der nächsten menschlichen Siedlung. Die Umgebung ist flach, vereinzelt stehen stachelige Kakteen. Für den Tag sind 40 Grad im Schatten gemeldet, dicht über dem Boden also etwa 47 Grad. Ihr alle seid leicht bekleidet: ärmelloses Hemd oder Bluse, lange Hose, kurze Socken, gewöhnliche Straßenschuhe.",
+    task: "15 Gegenstände konntet ihr retten, bevor das Flugzeug Feuer fing. Bringe sie in eine Rangfolge: Platz 1 für den wichtigsten, Platz 15 für den unwichtigsten Gegenstand. Mehrere Gegenstände auf demselben Platz sind nicht erlaubt.",
+    source: "Musterlösung: Lösungsvorschlag der Wüstenübung.",
+    key: "Die Musterlösung beruht auf einer einzigen Grundentscheidung: Ihr bleibt am Absturzort. Ein ausgebranntes Flugzeug ist aus der Luft weithin sichtbar, ein Marsch von 70 Meilen bei 47 Grad dagegen tödlich. Deshalb stehen Signalmittel und Schutz vor Hitze ganz oben – und Kompass wie Flugkarte, die nur beim Aufbruch helfen würden, weit unten.",
+    items: [
+      ["Taschenspiegel", "Signalfunktion am Tag: Ein Suchflugzeug lässt sich damit über Kilometer hinweg auf euch aufmerksam machen."],
+      ["1 Mantel pro Person", "Schutz vor der Sonne am Tag und vor der Kälte in der Nacht; verringert außerdem den Flüssigkeitsverlust."],
+      ["1 Liter Wasser pro Person", "Lebenserhaltend gegen den Durst."],
+      ["Taschenlampe mit 4 Batterien", "Signalfunktion bei Nacht – und Licht für Arbeiten im Dunkeln."],
+      ["Rot-weißer Fallschirm", "Signalwirkung aus der Luft und Sonnenschutz am Boden."],
+      ["Taschenmesser mit Springklinge", "Zum Gewinnen von Flüssigkeit aus Kakteen und für alle Bastelarbeiten."],
+      ["Großer Plastikregenmantel", "Zum Sammeln von Kondenswasser."],
+      ["Geladene Pistole 7,65", "Signalfunktion – Schüsse sind weit zu hören."],
+      ["1 Sonnenbrille pro Person", "Erleichtert die Strapazen und hebt damit die Moral der Gruppe."],
+      ["Verbandkasten mit Gazebinden", "Erste Hilfe – und bessere Moral, weil Verletzungen versorgt werden können."],
+      ["Magnetkompass", "Nur nützlich, falls doch jemand aufbricht – praktisch also ohne Nutzen."],
+      ["Flugkarte des Absturzgebiets", "Ebenfalls nur beim Aufbruch nützlich, und der wäre lebensgefährlich."],
+      ["Buch über essbare Wüstentiere", "Hunger ist in dieser Lage nicht euer Problem; taugt eher zum Zeitvertreib."],
+      ["2 Liter Wodka (45 %)", "Zur Wundbehandlung brauchbar, gegen den Durst dagegen schädlich."],
+      ["Flasche mit 1.000 Salztabletten", "Unnütz und sogar gefährlich – Salz wird erst wichtig, wenn genügend Flüssigkeit da ist."]
+    ]
+  }
+};
+
+const SKALA = [
+  [0, 25, "hervorragend", "Das ist Expertenniveau – ihr habt die Logik der Situation voll durchschaut."],
+  [26, 32, "gut", "Deutlich besser als der Durchschnitt. Eure Kriterien haben gestimmt."],
+  [33, 45, "durchschnittlich", "Ein solides Ergebnis – typisch, wenn einzelne Gegenstände falsch eingeschätzt werden."],
+  [46, 55, "mäßig", "Einige zentrale Annahmen über die Lage waren nicht richtig."],
+  [56, 70, "schwach", "Hier lohnt ein Blick auf die Grundfrage: Was entscheidet in dieser Situation über Leben und Tod?"],
+  [71, 999, "sehr schwach", "Fast alles anders eingeschätzt als die Fachleute – die Begründungen unten sind deshalb besonders spannend."]
+];
+function bewertung(p){ return SKALA.find(s => p >= s[0] && p <= s[1]); }
+
+/* ================== NAVIGATION ================== */
+const views = document.querySelectorAll("section.view");
+const tabBtns = document.querySelectorAll("#tabbar button");
+function show(id){
+  views.forEach(v => v.classList.toggle("active", v.id === "v-" + id));
+  tabBtns.forEach(b => b.setAttribute("aria-selected", b.dataset.view === id ? "true" : "false"));
+  if(id === "bilanz") renderBilanz();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+tabBtns.forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+document.querySelectorAll("[data-goto]").forEach(el => el.addEventListener("click", () => show(el.dataset.goto)));
+
+function shuffle(a){
+  const r = a.slice();
+  for(let i = r.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = r[i]; r[i] = r[j]; r[j] = t; }
+  return r;
+}
+
+/* ================== SPIELZUSTAND ================== */
+const S = {};
+Object.keys(GAMES).forEach(k => {
+  S[k] = { order: shuffle(GAMES[k].items.map((_, i) => i)), einzel: null, gruppe: null, phase: 1 };
+});
+
+/* ================== AUFBAU DER SPIELSEITEN ================== */
+function buildGame(key){
+  const g = GAMES[key];
+  const host = document.getElementById("v-" + key);
+  host.innerHTML =
+    "<div class='sect-head " + g.cls + "'><div class='pos'>" +
+      "<div class='lbl'>" + g.lbl + "</div>" +
+      "<h2>" + g.title + "</h2>" +
+      "<p class='meta'>" + g.teaser + "</p>" +
+    "</div></div>" +
+
+    "<div class='phases' id='" + key + "-phases'></div>" +
+
+    "<div class='card'>" +
+      "<div class='block-title'><span class='ico'><svg class='i' style='width:18px;height:18px'><use href='" + g.icon + "'/></svg></span>Die Situation</div>" +
+      "<p>" + g.situation + "</p>" +
+      "<p style='margin:0'><strong>Deine Aufgabe:</strong> " + g.task + "</p>" +
+    "</div>" +
+
+    "<div class='card'>" +
+      "<div class='block-title'><span class='ico'><svg class='i' style='width:18px;height:18px'><use href='#ic-check'/></svg></span><span id='" + key + "-head'>Deine Rangfolge</span></div>" +
+      "<div class='hint'><span class='ico'><svg class='i' style='width:20px;height:20px'><use href='#ic-bulb'/></svg></span><span id='" + key + "-instr'></span></div>" +
+      "<ol class='rank' id='" + key + "-rank'></ol>" +
+      "<div class='btnrow' id='" + key + "-actions'></div>" +
+    "</div>" +
+
+    "<div id='" + key + "-result'></div>";
+
+  renderPhases(key);
+  renderRank(key);
+  renderActions(key);
+}
+
+function renderPhases(key){
+  const st = S[key];
+  const labels = ["Einzelentscheidung", "Gruppenentscheidung", "Vergleich mit der Lösung"];
+  document.getElementById(key + "-phases").innerHTML = labels.map((l, i) => {
+    const n = i + 1;
+    const cls = st.phase > n ? "done" : (st.phase === n ? "on" : "");
+    return "<div class='ph " + cls + "'><span class='dot'>" + (st.phase > n ? "✓" : n) + "</span>" + l + "</div>";
+  }).join("");
+}
+
+function renderRank(key){
+  const g = GAMES[key], st = S[key];
+  const ol = document.getElementById(key + "-rank");
+  const locked = st.phase === 3;
+  ol.className = "rank" + (locked ? " locked" : "");
+  ol.innerHTML = "";
+  st.order.forEach((itemIdx, pos) => {
+    const li = document.createElement("li");
+    li.draggable = !locked;
+    li.dataset.pos = pos;
+    li.innerHTML =
+      "<span class='pos'>" + (pos + 1) + "</span>" +
+      "<span class='nm'>" + g.items[itemIdx][0] + "</span>" +
+      "<span class='mv'>" +
+        "<button type='button' aria-label='nach oben' " + (pos === 0 || locked ? "disabled" : "") + " data-dir='-1'>▲</button>" +
+        "<button type='button' aria-label='nach unten' " + (pos === st.order.length - 1 || locked ? "disabled" : "") + " data-dir='1'>▼</button>" +
+      "</span>";
+    li.querySelectorAll(".mv button").forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation();
+      move(key, pos, pos + Number(b.dataset.dir));
+    }));
+    if(!locked){
+      li.addEventListener("dragstart", e => { dragFrom = pos; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+      li.addEventListener("dragend", () => { li.classList.remove("dragging"); ol.querySelectorAll("li").forEach(x => x.classList.remove("over")); });
+      li.addEventListener("dragover", e => { e.preventDefault(); li.classList.add("over"); });
+      li.addEventListener("dragleave", () => li.classList.remove("over"));
+      li.addEventListener("drop", e => { e.preventDefault(); li.classList.remove("over"); move(key, dragFrom, pos); });
+    }
+    ol.appendChild(li);
+  });
+}
+let dragFrom = null;
+
+function move(key, from, to){
+  const o = S[key].order;
+  if(from === null || to < 0 || to >= o.length || from === to) return;
+  const it = o.splice(from, 1)[0];
+  o.splice(to, 0, it);
+  renderRank(key);
+}
+
+function renderActions(key){
+  const st = S[key];
+  const head = document.getElementById(key + "-head");
+  const instr = document.getElementById(key + "-instr");
+  const box = document.getElementById(key + "-actions");
+  box.innerHTML = "";
+
+  function btn(text, cls, fn){
+    const b = document.createElement("button");
+    b.className = "btn" + (cls ? " " + cls : "");
+    b.innerHTML = text;
+    b.addEventListener("click", fn);
+    box.appendChild(b);
+    return b;
+  }
+
+  if(st.phase === 1){
+    head.textContent = "Phase 1: Deine persönliche Rangfolge";
+    instr.innerHTML = "Sortiere die Liste mit den Pfeiltasten oder per Ziehen. <strong>Denk zuerst über die Bedingungen der Situation nach</strong> – erst daraus ergeben sich deine Kriterien. Nimm dir etwa 10 Minuten und entscheide allein, ohne Absprache.";
+    btn("Einzelentscheidung festlegen <svg class='i'><use href='#ic-arrow'/></svg>", "", () => {
+      st.einzel = st.order.slice();
+      st.phase = 2;
+      renderPhases(key); renderRank(key); renderActions(key);
+    });
+  } else if(st.phase === 2){
+    head.textContent = "Phase 2: Eure gemeinsame Rangfolge";
+    instr.innerHTML = "Deine Einzelentscheidung ist gespeichert. Diskutiert jetzt in der Gruppe und verändert die Liste so lange, bis <strong>jeder Platz einstimmig</strong> getragen wird: argumentieren statt überreden, keine Abstimmung, kein Nachgeben aus Bequemlichkeit. Arbeitest du allein? Dann geh direkt zur Auswertung.";
+    btn("Gruppenentscheidung auswerten <svg class='i'><use href='#ic-arrow'/></svg>", "", () => {
+      st.gruppe = st.order.slice();
+      st.phase = 3;
+      renderPhases(key); renderRank(key); renderActions(key); renderResult(key);
+    });
+    btn("Ohne Gruppe direkt auswerten", "ghost", () => {
+      st.gruppe = null;
+      st.order = st.einzel.slice();
+      st.phase = 3;
+      renderPhases(key); renderRank(key); renderActions(key); renderResult(key);
+    });
+  } else {
+    head.textContent = "Eure festgelegte Rangfolge";
+    instr.innerHTML = "Die Liste ist gesperrt. Die Auswertung mit der Musterlösung findest du direkt darunter.";
+    btn("Spiel neu starten", "ghost", () => {
+      S[key] = { order: shuffle(GAMES[key].items.map((_, i) => i)), einzel: null, gruppe: null, phase: 1 };
+      document.getElementById(key + "-result").innerHTML = "";
+      renderPhases(key); renderRank(key); renderActions(key);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+}
+
+/* ================== AUSWERTUNG ================== */
+function punkte(order){
+  // order[pos] = itemIdx; Musterlösungsrang des Items = itemIdx + 1
+  return order.reduce((s, itemIdx, pos) => s + Math.abs((pos + 1) - (itemIdx + 1)), 0);
+}
+
+function renderResult(key){
+  const g = GAMES[key], st = S[key];
+  const pE = punkte(st.einzel);
+  const pG = st.gruppe ? punkte(st.gruppe) : null;
+  const bE = bewertung(pE), bG = pG !== null ? bewertung(pG) : null;
+
+  const rankOfE = {}; st.einzel.forEach((it, pos) => rankOfE[it] = pos + 1);
+  const rankOfG = {}; if(st.gruppe) st.gruppe.forEach((it, pos) => rankOfG[it] = pos + 1);
+
+  let scores =
+    "<div class='score'><div class='lbl'>Deine Einzellösung</div><div class='val' style='color:var(--a1)'>" + pE + "</div><div class='cap'>Fehlerpunkte · " + bE[2] + "</div></div>";
+  if(pG !== null){
+    scores += "<div class='score'><div class='lbl'>Eure Gruppenlösung</div><div class='val' style='color:var(--a2)'>" + pG + "</div><div class='cap'>Fehlerpunkte · " + bG[2] + "</div></div>";
+    const diff = pE - pG;
+    const col = diff > 0 ? "var(--ok)" : (diff < 0 ? "var(--bad)" : "var(--muted)");
+    scores += "<div class='score'><div class='lbl'>Unterschied</div><div class='val' style='color:" + col + "'>" +
+      (diff > 0 ? "−" + diff : (diff < 0 ? "+" + (-diff) : "0")) +
+      "</div><div class='cap'>" + (diff > 0 ? "Punkte weniger durch die Gruppe" : (diff < 0 ? "Punkte mehr durch die Gruppe" : "kein Unterschied")) + "</div></div>";
+  }
+
+  let verdictTxt, vcol, vhead;
+  if(pG === null){
+    vhead = "Ergebnis: " + bE[2];
+    verdictTxt = bE[3] + " Je niedriger die Punktzahl, desto näher liegt deine Rangfolge an der Expertenlösung. Wiederhole das Spiel später gemeinsam mit anderen – der Vergleich Einzel gegen Gruppe ist der eigentlich spannende Teil.";
+    vcol = "var(--a1)";
+  } else if(pG < pE){
+    vhead = "Die Gruppe war besser – genau das ist der Normalfall.";
+    verdictTxt = "Eure gemeinsame Lösung liegt " + (pE - pG) + " Punkte näher an der Expertenlösung als deine eigene. Im Team kommt mehr Wissen zusammen, und gute Argumente setzen sich in der Diskussion durch. Genau deshalb treffen Unternehmen wichtige Entscheidungen selten allein.";
+    vcol = "var(--ok)";
+  } else if(pG > pE){
+    vhead = "Diesmal warst du allein näher dran.";
+    verdictTxt = "Das kommt vor – und ist besonders interessant. Frag dich: Hat sich in der Diskussion die beste Begründung durchgesetzt oder die lauteste Stimme? Hast du deine richtige Einschätzung zu schnell aufgegeben? Gruppen sind nur dann besser, wenn wirklich argumentiert wird.";
+    vcol = "var(--a3)";
+  } else {
+    vhead = "Gleichstand zwischen dir und der Gruppe.";
+    verdictTxt = "Die Diskussion hat eure Punktzahl nicht verändert. Schaut euch an, bei welchen Gegenständen ihr euch bewegt habt – vielleicht haben sich Verbesserungen und Verschlechterungen genau ausgeglichen.";
+    vcol = "var(--a1)";
+  }
+
+  // Tabelle, sortiert nach Musterlösung
+  let rows = "";
+  g.items.forEach((it, itemIdx) => {
+    const loes = itemIdx + 1;
+    const e = rankOfE[itemIdx], dE = Math.abs(e - loes);
+    const cls = d => d === 0 ? "d0" : (d <= 2 ? "d1" : "d2");
+    rows += "<tr" + (loes <= 3 ? " class='top'" : "") + ">" +
+      "<td class='num'><span class='badge' style='background:var(--a1-soft);color:var(--a1)'>" + loes + "</span></td>" +
+      "<td><strong>" + it[0] + "</strong><div class='why'>" + it[1] + "</div></td>" +
+      "<td class='num'>" + e + "</td>" +
+      "<td class='num'><span class='badge " + cls(dE) + "'>" + dE + "</span></td>";
+    if(st.gruppe){
+      const gr = rankOfG[itemIdx], dG = Math.abs(gr - loes);
+      rows += "<td class='num'>" + gr + "</td><td class='num'><span class='badge " + cls(dG) + "'>" + dG + "</span></td>";
+    }
+    rows += "</tr>";
+  });
+  let sumRow = "<tr><td></td><td style='font-weight:800'>Summe der Fehlerpunkte</td>" +
+    "<td class='num'></td><td class='num'><span class='badge' style='background:var(--a1);color:#fff'>" + pE + "</span></td>";
+  if(st.gruppe) sumRow += "<td class='num'></td><td class='num'><span class='badge' style='background:var(--a2);color:#fff'>" + pG + "</span></td>";
+  sumRow += "</tr>";
+
+  const head = "<tr><th>Lösung</th><th>Gegenstand und Begründung der Fachleute</th><th style='text-align:center'>Du</th><th style='text-align:center'>Abw.</th>" +
+    (st.gruppe ? "<th style='text-align:center'>Gruppe</th><th style='text-align:center'>Abw.</th>" : "") + "</tr>";
+
+  const skala = SKALA.map(s => {
+    const hit = (pE >= s[0] && pE <= s[1]) || (pG !== null && pG >= s[0] && pG <= s[1]);
+    const bis = s[1] > 900 ? "und mehr" : "– " + s[1];
+    return "<div class='" + (hit ? "hit" : "") + "'><span>" + s[0] + " " + bis + " Punkte</span><span>" + s[2] + "</span></div>";
+  }).join("");
+
+  document.getElementById(key + "-result").innerHTML =
+    "<div class='card'>" +
+      "<div class='block-title'><span class='ico'><svg class='i' style='width:18px;height:18px'><use href='#ic-chart'/></svg></span>Vergleich mit der Musterlösung</div>" +
+      "<div class='scores'>" + scores + "</div>" +
+      "<div class='verdict' style='border-color:" + vcol + ";background:color-mix(in srgb," + vcol + " 12%,transparent)'>" +
+        "<b>" + vhead + "</b>" + verdictTxt + "</div>" +
+      "<p style='font-size:.92rem;color:var(--muted)'>Für jeden Gegenstand wird die Abweichung zwischen deinem Platz und dem Platz der Musterlösung gebildet – ohne Vorzeichen. Die Summe ergibt die Fehlerpunkte: <strong>je weniger, desto besser</strong>.</p>" +
+      "<div class='tablescroll'><table class='res'><thead>" + head + "</thead><tbody>" + rows + sumRow + "</tbody></table></div>" +
+      "<details class='extra'><summary>Wie ist meine Punktzahl einzuordnen?</summary><div class='txt'>" +
+        "<p>Diese Skala stammt aus dem NASA-Originalspiel und lässt sich auf alle drei Szenarien übertragen. Dein Ergebnis ist hervorgehoben.</p>" +
+        "<div class='scale'>" + skala + "</div>" +
+        "<p style='margin:12px 0 0'>Wichtig: Die Punktzahl selbst sagt wenig aus – niemand von euch ist Astronautin oder Seemann. Interessant ist der Vergleich zwischen Einzel- und Gruppenlösung.</p>" +
+      "</div></details>" +
+      "<p class='note'>" + g.source + "</p>" +
+    "</div>" +
+
+    "<div class='card'>" +
+      "<div class='block-title'><span class='ico'><svg class='i' style='width:18px;height:18px'><use href='#ic-bulb'/></svg></span>Der Schlüssel zur Lösung</div>" +
+      "<p style='margin:0'>" + g.key + "</p>" +
+      (g.alt ? "<details class='extra'><summary>Es geht auch anders: eine abweichende Lösung zum Diskutieren</summary><div class='txt'>" + g.alt + "</div></details>" : "") +
+      "<div class='econ' style='margin-top:18px'><b>Der ökonomische Blick</b>Du hast gerade unter Knappheit entschieden: Nicht alles passt mit, also musstest du Prioritäten setzen. Was du auf die hinteren Plätze verbannt hast, sind deine Opportunitätskosten. Entscheidend war dabei nicht Wissen im Detail, sondern ein klares Kriterium – genau wie bei der Frage, wofür du dein knappes Taschengeld ausgibst oder wofür ein Unternehmen sein begrenztes Kapital einsetzt.</div>" +
+    "</div>" +
+
+    "<div class='btnrow' style='margin-bottom:20px'>" +
+      "<button class='btn ghost' id='" + key + "-tobilanz'>Zu deiner Gesamtbilanz</button>" +
+    "</div>";
+
+  document.getElementById(key + "-tobilanz").addEventListener("click", () => show("bilanz"));
+  document.getElementById(key + "-result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ================== BILANZ ================== */
+function renderBilanz(){
+  const box = document.getElementById("bilanzBox");
+  const done = Object.keys(GAMES).filter(k => S[k].phase === 3);
+  if(!done.length){
+    box.innerHTML = "<div class='card'><p style='margin:0'>Du hast noch kein Spiel ausgewertet. Spiel zuerst eines der drei Szenarien durch – die Ergebnisse erscheinen dann automatisch hier.</p></div>";
+    return;
+  }
+  let rows = "", sumE = 0, sumG = 0, nG = 0;
+  done.forEach(k => {
+    const pE = punkte(S[k].einzel);
+    const pG = S[k].gruppe ? punkte(S[k].gruppe) : null;
+    if(pG !== null){ sumE += pE; sumG += pG; nG++; }
+    rows += "<tr><td><strong>" + GAMES[k].title + "</strong></td>" +
+      "<td class='num'>" + pE + "</td><td class='num'>" + (pG === null ? "–" : pG) + "</td>" +
+      "<td>" + bewertung(pG === null ? pE : pG)[2] + "</td></tr>";
+  });
+
+  let fazit;
+  if(nG === 0){
+    fazit = "Du hast bisher nur allein gespielt. Nimm dir für mindestens ein Szenario eine Gruppe dazu – erst dann siehst du den eigentlichen Effekt, um den es bei diesen Spielen geht.";
+  } else if(sumG < sumE){
+    fazit = "In " + (nG === 1 ? "dem Spiel mit Gruppenphase" : "den " + nG + " Spielen mit Gruppenphase") + " ist die Gruppe näher an den Expertenlösungen als du allein (" + sumG + " gegen " + sumE + " Fehlerpunkte). Das ist das typische Ergebnis: Ein Team weiß zusammen mehr, als jedes Mitglied für sich – vorausgesetzt, es wird wirklich argumentiert.";
+  } else if(sumG > sumE){
+    fazit = "In " + (nG === 1 ? "dem Spiel mit Gruppenphase" : "den " + nG + " Spielen mit Gruppenphase") + " warst du allein näher an den Expertenlösungen als die Gruppe (" + sumE + " gegen " + sumG + " Fehlerpunkte). Das kommt vor und ist ein guter Gesprächsanlass: Wurden gute Argumente überhört, hat sich jemand durchgesetzt statt überzeugt – oder habt ihr zu schnell nachgegeben, um fertig zu werden?";
+  } else {
+    fazit = "Einzel- und Gruppenlösungen liegen insgesamt gleichauf. Schaut euch an, bei welchen Gegenständen die Diskussion etwas verbessert und bei welchen sie etwas verschlechtert hat.";
+  }
+
+  box.innerHTML =
+    "<div class='card'>" +
+      "<div class='block-title'><span class='ico'><svg class='i' style='width:18px;height:18px'><use href='#ic-chart'/></svg></span>Deine Ergebnisse</div>" +
+      "<div class='tablescroll'><table class='res' style='min-width:460px'><thead><tr><th>Szenario</th>" +
+      "<th style='text-align:center'>Einzeln</th><th style='text-align:center'>Gruppe</th><th>Einordnung</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody></table></div>" +
+      "<div class='econ' style='margin-top:18px'><b>Fazit</b>" + fazit + "</div>" +
+    "</div>";
+}
+
+/* ================== START ================== */
+Object.keys(GAMES).forEach(buildGame);
+
+</script>
+</body>
+</html>
